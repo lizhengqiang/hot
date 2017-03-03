@@ -5,13 +5,37 @@ import (
 	"fmt"
 	"github.com/Unknwon/com"
 	"os"
+	"io/ioutil"
+	"strings"
+	"path"
 )
 
 type Docs struct {
 	LocalRoot string
 	GitTarget string
+	Suffix    string
 }
 
+func (d *Docs) ReadAll() (docs map[string]string, err error) {
+	docs = map[string]string{}
+
+	files, err := ioutil.ReadDir(d.LocalRoot)
+	if err != nil {
+		return
+	}
+
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+
+		if strings.HasSuffix(file.Name(), d.Suffix) {
+			bs, _ := ioutil.ReadFile(path.Join(d.LocalRoot, file.Name()))
+			docs[file.Name()] = string(bs)
+		}
+	}
+	return
+}
 func (d *Docs) ReloadDocs() error {
 	localRoot := d.LocalRoot
 	absRoot, err := filepath.Abs(localRoot)
